@@ -1,6 +1,6 @@
 # Authentication Backend
 
-A secure and robust authentication backend built with Node.js, Express, and MongoDB. This project provides a complete authentication system with features like user registration, login, and JWT-based authentication.
+A secure, scalable and robust authentication backend built with Node.js, Express, and MongoDB. This project provides a complete authentication system with features like user registration, login, and JWT-based authentication.
 
 ## Features
 
