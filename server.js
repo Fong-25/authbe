@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/connectdb.js';
 import cors from 'cors'
 import authRoutes from './routes/auth.route.js'
+import userRoutes from './routes/user.route.js'
 
 dotenv.config()
 
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api/auth', authRoutes) // auth routes
+app.use('/api/user', userRoutes)
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI

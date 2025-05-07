@@ -15,7 +15,7 @@ if (!JWT_SECRET) {
 
 export const getUsers = async (req, res) => {
     try {
-        const users = await getAllUsers()
+        const users = await getAllUsers().select('-password')
         if (!users) {
             return res.status(404).json({ success: false, message: 'No users found' })
         }
@@ -29,7 +29,7 @@ export const getUsers = async (req, res) => {
 export const getUserWithId = async (req, res) => {
     try {
         const { id } = req.params
-        const user = await getUserById(id)
+        const user = await getUserById(id).select('-passwrord')
         if (!user) {
             return res.status(404).json({ success: false, message: 'No user found' })
         }
@@ -43,13 +43,27 @@ export const getUserWithId = async (req, res) => {
 export const getUserWithUsername = async (req, res) => {
     try {
         const { username } = req.params
-        const user = await getUserByUsername(username)
-        if (!user){
+        const user = await getUserByUsername(username).select('-password')
+        if (!user) {
             return res.status(404).json({ success: false, message: "No user found" })
-        }   
+        }
         res.status(200).json({ success: true, user })
     } catch (error) {
         console.error('Error in getUserWithUsername:', error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
+}
+
+export const getUserWithEmail = async (req, res) => {
+    try {
+        const { email } = req.params
+        const user = await getUserByEmail(email).select('-password')
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No user found" })
+        }
+        res.status(200).json({ success: true, user })
+    } catch (error) {
+        console.error('Error in getUserWithEmail:', error)
         return res.status(500).json({ message: 'Internal server error' })
     }
 }

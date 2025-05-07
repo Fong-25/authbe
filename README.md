@@ -55,12 +55,16 @@ authbackend/
 
 ## API Endpoints
 
-### Current Authentication Routes
-- `POST /api/auth/register` - Register a new user
+### Authentication Routes
+- `POST /api/auth/signup` - Register a new user
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/logout` - Logout user
-- `GET api/auth/users` - Get all users - Admin only
-- `GET api/auth/user/:id` - Get user with Mongo id (._id) - Admin only
+
+### User Routes
+- `GET /api/user/users` - Get all users (Admin only)
+- `GET /api/user/user/:id` - Get user by ID (Authenticated)
+- `GET /api/user/user/username/:username` - Get user by username (Admin only)
+- `GET /api/user/user/email/:email` - Get user by email (Admin only)
 
 ## Dependencies
 
