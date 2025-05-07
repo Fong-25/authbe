@@ -40,3 +40,16 @@ export const getUserWithId = async (req, res) => {
     }
 }
 
+export const getUserWithUsername = async (req, res) => {
+    try {
+        const { username } = req.params
+        const user = await getUserByUsername(username)
+        if (!user){
+            return res.status(404).json({ success: false, message: "No user found" })
+        }   
+        res.status(200).json({ success: true, user })
+    } catch (error) {
+        console.error('Error in getUserWithUsername:', error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
+}
