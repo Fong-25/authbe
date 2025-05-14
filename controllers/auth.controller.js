@@ -1,4 +1,14 @@
-import { getAllUsers, getUserById, getUserByUsername, createUser, getUserByEmail } from '../services/user.services.js';
+import {
+    getAllUsers,
+    getUserById,
+    getUserByUsername,
+    createUser,
+    getUserByEmail,
+    updateUser,
+    verifyResetToken,
+    generateResetToken,
+    resetPassword
+} from '../services/user.services.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
 import express from 'express'
@@ -20,6 +30,9 @@ export const signup = async (req, res) => {
 
         if (existingUsername || existingEmail) {
             return res.status(400).json({ success: false, message: "Username or email already exists" })
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" })
         }
         const hashedPassword = await bcrypt.hash(password, 10)
         const newUser = await createUser({
@@ -83,3 +96,90 @@ export const logout = (req, res) => {
     }
 }
 
+export const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: "Current password and new password are required" });
+        }
+        const userId = req.user._id
+
+        const user = await getUserById(userId)
+
+        if (!user) {
+            return res.status(404).json({ success: false, messag: "User not found" })
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" })
+        }
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: 'Old password is incorrect' })
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        await updateUser(userId, { password: hashedPassword })
+        res.status(200).json({ success: true, message: 'Password updated successfully' })
+    } catch (error) {
+        console.error('Error in changePassword:', error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
+}
+
+export const requestPasswordReset = async (req, res) => {
+    try {
+        const { email } = req.body
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
+        const user = await getUserByEmail(email)
+        if (!user) {
+            // return res.status(404).json({ success: false, messag: "User not found" })
+            // security reason: don't reveal if email is found or not
+            return res.status(200).json({
+                success: true,
+                message: "If your email exists in our system, you will receive a password reset link shortly."
+            });
+        }
+
+        const resetToken = await generateResetToken(user._id)
+
+        // In production, dont return the token in response, send it via email
+        res.status(200).json({
+            success: true,
+            message: 'If your email exists in our system, you will receive a password reset link shortly.',
+            // In production, dont return the token in response, send it via email
+            token: resetToken
+        })
+    } catch (error) {
+        console.error('Error in forgotPassword:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+export const resetPasswordwithToken = async (req, res) => {
+    try {
+        const { token, email, newPassword } = req.body
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: "All fields are required" })
+        }
+
+        const user = await verifyResetToken(token)
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Invalid or expired token" });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" })
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await updateUser(user._id, {
+            password: hashedPassword,
+            resetToken: null,
+            resetTokenExpiry: null
+        });
+        res.status(200).json({ success: true, message: "Password has been reset successfully" });
+    } catch (error) {
+        console.error('Error in resetPasswordWithToken:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}

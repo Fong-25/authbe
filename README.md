@@ -12,6 +12,8 @@ A secure, scalable and robust authentication backend built with Node.js, Express
 - Cookie-based session management
 - Environment variable configuration
 - RESTful API architecture
+- Password reset functionality
+- Role-based access control (Admin/User)
 
 ## Prerequisites
 
@@ -59,6 +61,9 @@ authbackend/
 - `POST /api/auth/signup` - Register a new user
 - `POST /api/auth/login` - Login user
 - `POST /api/auth/logout` - Logout user
+- `POST /api/auth/change-password` - Change password (Authenticated)
+- `POST /api/auth/request-pasword-reset` - Request password reset token
+- `POST /api/auth/reset-password` - Reset password using token
 
 ### User Routes
 - `GET /api/user/users` - Get all users (Admin only)
