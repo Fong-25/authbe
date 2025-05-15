@@ -22,8 +22,10 @@ async function updateUserModel() {
         // add new fields with null values
         const result = await User.updateMany(
             // Replace resetToken and default value with the desired field name if want to add new field
-            { resetToken: { $exists: false } }, // Find users without resetToken
-            { $set: { resetToken: null, resetTokenExpiry: null } } // add fields
+            // { resetToken: { $exists: false } }, // Find users without resetToken
+            // { $set: { resetToken: null, resetTokenExpiry: null } } // add fields
+            { isVerified: { $exists: false } },
+            { $set: { isVerified: false, verificationToken: Math.floor(100000 + Math.random() * 900000).toString() } }
         )
         console.log(`Updated ${result.modifiedCount} users`)
 
