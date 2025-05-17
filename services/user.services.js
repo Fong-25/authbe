@@ -10,8 +10,8 @@ export const createUser = (values) => new User(values).save().then((user) => use
 
 export const updateUser = (id, values) => User.findByIdAndUpdate(id, values, { new: true })
 
-export const verifyResetToken = (token) => {
-    const user = User.findOne({
+export const verifyResetToken = async (token) => {
+    const user = await User.findOne({
         resetToken: token,
         resetTokenExpiry: { $gt: Date.now() }
     })
@@ -29,8 +29,8 @@ export const generateResetToken = async (userId) => {
     return resetToken
 }
 
-export const resetPassword = (token, newPassword) => {
-    const user = verifyResetToken(token)
+export const resetPassword = async (token, newPassword) => {
+    const user = awaitverifyResetToken(token)
     if (!user) {
         return null
     }
@@ -38,5 +38,19 @@ export const resetPassword = (token, newPassword) => {
     user.resetToken = undefined
     user.resetTokenExpiry = undefined
     user.save()
+    return user
+}
+
+export const generateVerificationToken = async (userId) => {
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString() // 6 digits
+
+    await updateUser(userId, {
+        verificationToken
+    })
+    return verificationToken
+}
+
+export const verifyVerificationToken = async (token) => {
+    const user = await User.findOne({ verificationToken: token })
     return user
 }

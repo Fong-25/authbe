@@ -7,7 +7,9 @@ import {
     updateUser,
     verifyResetToken,
     generateResetToken,
-    resetPassword
+    resetPassword,
+    generateVerificationToken,
+    verifyVerificationToken
 } from '../services/user.services.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
@@ -35,17 +37,22 @@ export const signup = async (req, res) => {
             return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" })
         }
         const hashedPassword = await bcrypt.hash(password, 10)
+        const resetToken = null
+        const resetTokenExpiry = null
         const newUser = await createUser({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            resetToken,
+            resetTokenExpiry
         })
         if (!newUser) {
             return res.status(400).json({ success: false, message: "Internal server error" })
         }
-        // temporary NOT generating token in Sign up
+        // temporary NOT generating jwt token in Sign up
         // const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '1d' })
-
+        const verificationToken = await generateVerificationToken(newUser._id)
+        await updateUser(newUser._id, { verificationToken })
         res.status(201).json({ success: true, message: "User created sucessfully. Login to continue." })
     } catch (error) {
         console.error('Error in signup:', error)
@@ -107,7 +114,7 @@ export const changePassword = async (req, res) => {
         const user = await getUserById(userId)
 
         if (!user) {
-            return res.status(404).json({ success: false, messag: "User not found" })
+            return res.status(404).json({ success: false, message: "User not found" })
         }
         if (newPassword.length < 6) {
             return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" })
@@ -180,6 +187,31 @@ export const resetPasswordwithToken = async (req, res) => {
         res.status(200).json({ success: true, message: "Password has been reset successfully" });
     } catch (error) {
         console.error('Error in resetPasswordWithToken:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+export const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.body
+        if (!token) {
+            return res.status(400).json({ success: false, message: "Token is required" })
+        }
+        const user = await getUserById(req.user._id)
+        if (!user) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+        const isTokenValid = (token === user.verificationToken)
+        if (!isTokenValid) {
+            return res.status(400).json({ success: false, message: "Invalid or expired token" });
+        }
+        await updateUser(user._id, {
+            isVerified: true,
+            verificationToken: null
+        })
+        res.status(200).json({ success: true, message: "Email verified successfully" })
+    } catch (error) {
+        console.error('Error in verifyEmail:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
