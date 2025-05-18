@@ -1,5 +1,6 @@
 import {
     getAllUsers,
+    validateEmail,
     getUserById,
     getUserByUsername,
     createUser,
@@ -32,6 +33,9 @@ export const signup = async (req, res) => {
 
         if (existingUsername || existingEmail) {
             return res.status(400).json({ success: false, message: "Username or email already exists" })
+        }
+        if (!validateEmail(email)) {
+            return res.status(400).json({ success: false, message: "Invalid email address" })
         }
         if (password.length < 6) {
             return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" })
@@ -141,7 +145,7 @@ export const requestPasswordReset = async (req, res) => {
         }
         const user = await getUserByEmail(email)
         if (!user) {
-            // return res.status(404).json({ success: false, messag: "User not found" })
+            // return res.status(404).json({ success: false, message: "User not found" })
             // security reason: don't reveal if email is found or not
             return res.status(200).json({
                 success: true,

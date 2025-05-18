@@ -6,6 +6,11 @@ export const getUserById = (id) => User.findById(id)
 export const getUserByEmail = (email) => User.findOne({ email })
 export const getUserByUsername = (username) => User.findOne({ username })
 
+export const validateEmail = (email) => {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    return regex.test(email)
+}
+
 export const createUser = (values) => new User(values).save().then((user) => user.toObject())
 
 export const updateUser = (id, values) => User.findByIdAndUpdate(id, values, { new: true })
@@ -30,7 +35,7 @@ export const generateResetToken = async (userId) => {
 }
 
 export const resetPassword = async (token, newPassword) => {
-    const user = awaitverifyResetToken(token)
+    const user = await verifyResetToken(token)
     if (!user) {
         return null
     }

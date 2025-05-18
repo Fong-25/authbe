@@ -5,6 +5,7 @@ A secure, scalable and robust authentication backend built with Node.js, Express
 ## Features
 
 - User registration and login
+- Email validation
 - JWT (JSON Web Token) based authentication
 - Password hashing using bcrypt
 - MongoDB database integration
